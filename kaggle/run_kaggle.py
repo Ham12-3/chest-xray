@@ -15,8 +15,7 @@ import os
 import subprocess
 import sys
 
-# Filled in after the repo is pushed to GitHub.
-REPO_URL = "https://github.com/REPLACE_ME/chest-xray.git"
+REPO_URL = "https://github.com/Ham12-3/chest-xray.git"
 REPO_DIR = "chest-xray"
 
 # Kaggle paths: input is read-only, working is writable.
