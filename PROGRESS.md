@@ -15,9 +15,11 @@ Spec and research are done. Skeleton, config, data-and-split, preprocessing, and
 
 The split guard, preprocessing, and the model forward and loss step are all tested and passing.
 
-The official sample dataset (~4.5GB) is downloading. The full set does not fit the current free disk space.
+Sample data downloaded, prepared, and split. Training loop and metrics built and smoke-tested on CPU.
 
-Next: when the download finishes, run prepare_data.py and make_split.py on the real images, then build the training loop (Phase 5).
+Code is pushed to GitHub at https://github.com/Ham12-3/chest-xray (branch main).
+
+Next: run the real training on a Kaggle GPU notebook using kaggle/run_kaggle.py, then evaluate on the test set (Phase 7).
 
 ## Phase 0: Setup and research
 
