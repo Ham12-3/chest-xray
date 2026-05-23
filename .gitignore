@@ -1,0 +1,23 @@
+# Data is large (about 45GB). Never commit it.
+data/
+
+# Model checkpoints and run outputs
+artifacts/
+runs/
+*.pt
+*.pth
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# OS and editor
+.DS_Store
+.vscode/
+.idea/
+
+# gstack local state
+.gstack/

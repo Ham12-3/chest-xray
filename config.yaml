@@ -1,0 +1,41 @@
+# All hyperparameters live here. Scripts read this file. Nothing is hardcoded.
+
+seed: 42
+
+data:
+  csv_path: data/Data_Entry_2017.csv
+  image_dir: data/images
+  # Official NIH split lists. Patient-disjoint by construction.
+  train_val_list: data/train_val_list.txt
+  test_list: data/test_list.txt
+  # Where we save the resolved split (one image list per fold).
+  split_dir: artifacts/splits
+  # Fraction of train_val PATIENTS held out for validation.
+  val_fraction: 0.15
+
+image:
+  size: 224
+  # ImageNet statistics, because we use ImageNet pretrained weights.
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+
+model:
+  name: densenet121
+  pretrained: true
+  num_classes: 14
+
+train:
+  epochs: 15
+  batch_size: 32
+  lr: 0.0001
+  optimizer: adam
+  mixed_precision: true
+  early_stopping_patience: 3
+  num_workers: 4
+  # Reduce LR when validation macro AUC stops improving.
+  lr_patience: 1
+  lr_factor: 0.1
+
+eval:
+  # Bootstrap resamples for AUC confidence intervals.
+  bootstrap_samples: 1000
