@@ -18,6 +18,7 @@ Then POST an image to http://localhost:8000/predict
 import base64
 import io
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +40,13 @@ from src.preprocess import build_transforms  # noqa: E402
 
 STATIC_DIR = Path(__file__).parent / "static"
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _load_model()
+    yield
+
+
 app = FastAPI(
     title="Chest X-ray Classifier",
     description=(
@@ -47,6 +55,7 @@ app = FastAPI(
         "For educational and portfolio use only."
     ),
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -88,11 +97,6 @@ def _load_model():
 
     print(f"Model loaded from {ckpt_path} on {_device}")
     print(f"Val macro AUC at checkpoint: {ckpt.get('val_macro_auc', 'unknown'):.4f}")
-
-
-@app.on_event("startup")
-def startup():
-    _load_model()
 
 
 @app.get("/health")
