@@ -19,7 +19,9 @@ Sample data downloaded, prepared, and split. Training loop and metrics built and
 
 Code is pushed to GitHub at https://github.com/Ham12-3/chest-xray (branch main).
 
-Next: run the real training on a Kaggle GPU notebook using kaggle/run_kaggle.py, then evaluate on the test set (Phase 7).
+Phase 6 is complete. Evaluation script (scripts/evaluate_test.py) is built and pushed.
+
+Next: run the real training on a Kaggle GPU notebook using kaggle/run_kaggle.py, then run scripts/evaluate_test.py on the downloaded best.pt to get final test-set numbers.
 
 ## Phase 0: Setup and research
 
@@ -88,9 +90,9 @@ This phase enforces hard rule 3. Lead with AUC, show the full table.
 - [x] AUC-ROC per finding (src/evaluate.py)
 - [x] Macro-averaged AUC
 - [x] Bootstrap confidence intervals (function built, run during full test eval)
-- [~] Precision and recall (function built; per-class threshold selection on val not yet wired)
+- [x] Precision and recall (function built; thresholds selected on val via max-F1 sweep)
 - [x] Print the per-finding table, not just the macro average
-- [ ] Standalone test-set evaluation script (Phase 7, after a real training run)
+- [x] Standalone test-set evaluation script (scripts/evaluate_test.py)
 
 ## Phase 7: Baseline run and iterate
 
