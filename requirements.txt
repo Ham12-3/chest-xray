@@ -7,3 +7,6 @@ pyyaml
 pillow
 tqdm
 tensorboard
+fastapi
+uvicorn[standard]
+python-multipart

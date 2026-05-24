@@ -11,17 +11,13 @@ Legend:
 
 ## Where we are right now
 
-Spec and research are done. Skeleton, config, data-and-split, preprocessing, and the model are built.
+Phases 0 through 9 are complete for the sample dataset.
 
-The split guard, preprocessing, and the model forward and loss step are all tested and passing.
+Local CPU training ran 3 epochs on 640 images, reaching macro AUC 0.691. The full pipeline works end-to-end.
 
-Sample data downloaded, prepared, and split. Training loop and metrics built and smoke-tested on CPU.
+Grad-CAM heatmaps (src/gradcam.py) and FastAPI inference server (src/serve.py) are built. README updated with results table.
 
-Code is pushed to GitHub at https://github.com/Ham12-3/chest-xray (branch main).
-
-Phase 6 is complete. Evaluation script (scripts/evaluate_test.py) is built and pushed.
-
-Next: run the real training on a Kaggle GPU notebook using kaggle/run_kaggle.py, then run scripts/evaluate_test.py on the downloaded best.pt to get final test-set numbers.
+Next: run full training on the Kaggle GPU using kaggle/run_kaggle.py (full 112k dataset), then update the README results table with the real numbers.
 
 ## Phase 0: Setup and research
 
@@ -96,8 +92,8 @@ This phase enforces hard rule 3. Lead with AUC, show the full table.
 
 ## Phase 7: Baseline run and iterate
 
-- [ ] Smoke run end to end on the subset
-- [ ] Full baseline training run
+- [x] Smoke run end to end on the subset (3 epochs CPU, macro AUC 0.691)
+- [ ] Full baseline training run (pending Kaggle GPU)
 - [ ] Compare results to targets: mean AUC about 0.78 to 0.81
 - [ ] Sanity check the per-finding spread (easy vs hard findings)
 - [ ] Note any findings that look too good, which can mean leakage
@@ -106,15 +102,15 @@ This phase enforces hard rule 3. Lead with AUC, show the full table.
 
 This goes beyond the original five modules. Nice for a portfolio.
 
-- [ ] Grad-CAM heatmaps to show where the model looks
-- [ ] FastAPI endpoint that takes an image and returns the 14 probabilities
-- [ ] Clear disclaimer in the API response and UI: not a diagnostic tool
+- [x] Grad-CAM heatmaps to show where the model looks (src/gradcam.py)
+- [x] FastAPI endpoint that takes an image and returns the 14 probabilities (src/serve.py)
+- [x] Clear disclaimer in the API response and UI: not a diagnostic tool
 
 ## Phase 9: Docs and portfolio polish
 
-- [ ] README with results, the per-finding AUC table, and example predictions
-- [ ] State the label-noise ceiling and why labels are not ground truth
-- [ ] State plainly that this is a learning project, not clinically validated
+- [x] README with results, the per-finding AUC table, and example predictions
+- [x] State the label-noise ceiling and why labels are not ground truth
+- [x] State plainly that this is a learning project, not clinically validated
 
 ## Open questions to settle before or during the build
 
