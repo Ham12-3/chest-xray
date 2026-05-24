@@ -24,7 +24,8 @@ import numpy as np
 import torch
 import uvicorn
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +37,8 @@ from src.model import build_model  # noqa: E402
 from src.paths import artifacts_dir  # noqa: E402
 from src.preprocess import build_transforms  # noqa: E402
 
+STATIC_DIR = Path(__file__).parent / "static"
+
 app = FastAPI(
     title="Chest X-ray Classifier",
     description=(
@@ -45,6 +48,13 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/")
+def index():
+    return FileResponse(STATIC_DIR / "index.html")
 
 _model = None
 _gradcam = None

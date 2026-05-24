@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chest X-ray Classifier</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #f8fafc;
+    }
+
+    .subtitle { font-size: 13px; color: #64748b; margin-bottom: 16px; }
+
+    .disclaimer {
+      background: #1e1b2e;
+      border: 1px solid #7c3aed44;
+      border-left: 3px solid #7c3aed;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #a78bfa;
+      margin-bottom: 20px;
+    }
+
+    .upload-area {
+      border: 2px dashed #334155;
+      border-radius: 10px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #1e293b;
+      margin-bottom: 16px;
+    }
+
+    .upload-area:hover, .upload-area.drag-over {
+      border-color: #6366f1;
+      background: #1e2a3b;
+    }
+
+    .upload-area input { display: none; }
+
+    .upload-icon { font-size: 36px; margin-bottom: 10px; }
+
+    .upload-text { font-size: 14px; color: #94a3b8; }
+    .upload-text strong { color: #e2e8f0; }
+
+    .btn {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #4f46e5; }
+    .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+    .results { display: none; margin-top: 24px; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .results-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 16px;
+      border: 1px solid #334155;
+    }
+
+    .card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+
+    .top-finding {
+      font-size: 18px;
+      font-weight: 600;
+      color: #a78bfa;
+      margin-bottom: 4px;
+    }
+
+    .top-prob { font-size: 28px; font-weight: 700; color: #f8fafc; }
+
+    .finding-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .finding-name {
+      font-size: 12px;
+      color: #cbd5e1;
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 6px;
+      background: #334155;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: #6366f1;
+      transition: width 0.5s ease;
+    }
+
+    .bar-fill.high { background: #ef4444; }
+    .bar-fill.mid  { background: #f59e0b; }
+
+    .prob-label {
+      font-size: 11px;
+      color: #64748b;
+      width: 36px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .heatmap-img {
+      width: 100%;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .heatmap-caption {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .preview-img {
+      width: 100%;
+      border-radius: 6px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    .spinner.active { display: block; }
+
+    .error-msg {
+      background: #1e1b1b;
+      border: 1px solid #ef444444;
+      border-left: 3px solid #ef4444;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #fca5a5;
+      margin-top: 12px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Chest X-ray Classifier</h1>
+    <p class="subtitle">DenseNet-121 · 14 findings · Transfer learning on NIH ChestX-ray14</p>
+
+    <div class="disclaimer">
+      NOT a medical device. This model is not clinically validated and must never be used for diagnosis or patient care.
+      Labels are NLP-mined from reports and are noisy. For educational and portfolio use only.
+    </div>
+
+    <div class="upload-area" id="dropZone">
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg">
+      <div class="upload-icon">🩻</div>
+      <div class="upload-text">
+        <strong>Drop a chest X-ray here</strong><br>
+        or click to browse &nbsp;·&nbsp; PNG or JPEG
+      </div>
+    </div>
+
+    <div id="previewArea" style="display:none; margin-bottom:16px;">
+      <img id="previewImg" class="preview-img" style="max-height:200px; width:auto; margin:0 auto; display:block;">
+      <p style="text-align:center; font-size:12px; color:#64748b; margin-top:6px;" id="fileName"></p>
+    </div>
+
+    <button class="btn" id="predictBtn" disabled>Analyse image</button>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="spinner" id="spinner">Running inference + Grad-CAM...</div>
+
+    <div class="results" id="results">
+      <div class="results-grid">
+
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <h3>Top finding</h3>
+            <div class="top-finding" id="topLabel">—</div>
+            <div class="top-prob" id="topProb">—</div>
+          </div>
+
+          <div class="card">
+            <h3>Grad-CAM &mdash; where the model looked</h3>
+            <img class="heatmap-img" id="heatmapImg" src="" alt="Grad-CAM heatmap">
+            <p class="heatmap-caption">Red = high activation for top finding</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>All 14 findings</h3>
+          <div id="findingBars"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dropZone   = document.getElementById('dropZone');
+    const fileInput  = document.getElementById('fileInput');
+    const predictBtn = document.getElementById('predictBtn');
+    const spinner    = document.getElementById('spinner');
+    const results    = document.getElementById('results');
+    const errorMsg   = document.getElementById('errorMsg');
+    const previewArea = document.getElementById('previewArea');
+    const previewImg  = document.getElementById('previewImg');
+    const fileNameEl  = document.getElementById('fileName');
+
+    let selectedFile = null;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) setFile(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) setFile(fileInput.files[0]);
+    });
+
+    function setFile(file) {
+      selectedFile = file;
+      predictBtn.disabled = false;
+      fileNameEl.textContent = file.name;
+      previewImg.src = URL.createObjectURL(file);
+      previewArea.style.display = 'block';
+      results.style.display = 'none';
+      errorMsg.style.display = 'none';
+    }
+
+    predictBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      predictBtn.disabled = true;
+      spinner.classList.add('active');
+      results.style.display = 'none';
+      errorMsg.style.display = 'none';
+
+      const form = new FormData();
+      form.append('file', selectedFile);
+
+      try {
+        const res = await fetch('/predict', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || 'Server error');
+        }
+
+        renderResults(data);
+      } catch (err) {
+        errorMsg.textContent = 'Error: ' + err.message;
+        errorMsg.style.display = 'block';
+      } finally {
+        spinner.classList.remove('active');
+        predictBtn.disabled = false;
+      }
+    });
+
+    function renderResults(data) {
+      document.getElementById('topLabel').textContent = data.top_finding.label;
+      document.getElementById('topProb').textContent = (data.top_finding.probability * 100).toFixed(1) + '%';
+
+      document.getElementById('heatmapImg').src = 'data:image/png;base64,' + data.gradcam_png_base64;
+
+      const sorted = Object.entries(data.predictions)
+        .sort((a, b) => b[1] - a[1]);
+
+      const container = document.getElementById('findingBars');
+      container.innerHTML = '';
+
+      sorted.forEach(([label, prob]) => {
+        const pct = (prob * 100).toFixed(1);
+        const fillClass = prob >= 0.7 ? 'high' : prob >= 0.4 ? 'mid' : '';
+        container.innerHTML += `
+          <div class="finding-row">
+            <div class="finding-name">${label}</div>
+            <div class="bar-track">
+              <div class="bar-fill ${fillClass}" style="width:${pct}%"></div>
+            </div>
+            <div class="prob-label">${pct}%</div>
+          </div>`;
+      });
+
+      results.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
