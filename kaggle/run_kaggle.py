@@ -30,7 +30,7 @@ def sh(cmd, **kw):
 
 def main():
     if not os.path.exists(REPO_DIR):
-        sh(["git", "clone", "--depth", "1", REPO_URL, REPO_DIR])
+        sh(["git", "clone", "--depth", "1", "-b", "main", REPO_URL, REPO_DIR])
     os.chdir(REPO_DIR)
 
     env = dict(os.environ)
