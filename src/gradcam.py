@@ -14,6 +14,8 @@ Usage:
     overlay = cam.overlay(pil_image, heatmap)           # PIL Image with red overlay
 """
 
+import types
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -32,7 +34,27 @@ class GradCAM:
         self._activations = None
         self._gradients = None
         self._hooks = []
+        self._disable_inplace_relu()
         self._register_hooks()
+
+    def _disable_inplace_relu(self):
+        # DenseNet has two inplace relu sources:
+        # 1. nn.ReLU(inplace=True) modules inside dense blocks — fixed by setting inplace=False.
+        # 2. F.relu(features, inplace=True) in DenseNet.forward() — fixed by patching forward.
+        for module in self.model.modules():
+            if isinstance(module, torch.nn.ReLU):
+                module.inplace = False
+
+        # Patch the top-level forward to avoid the inplace F.relu call.
+        def _forward(self_model, x):
+            features = self_model.features(x)
+            out = F.relu(features, inplace=False)
+            out = F.adaptive_avg_pool2d(out, (1, 1))
+            out = torch.flatten(out, 1)
+            out = self_model.classifier(out)
+            return out
+
+        self.model.forward = types.MethodType(_forward, self.model)
 
     def _register_hooks(self):
         target = self.model.features.norm5
